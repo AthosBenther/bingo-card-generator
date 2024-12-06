@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dynamic Bingo Card Generator</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .bingo-card {
+      display: grid;
+      gap: 5px;
+      margin: 20px auto;
+      max-width: 100%;
+      grid-template-columns: repeat(5, 1fr); /* Fixed 5x5 grid */
+    }
+
+    .bingo-cell {
+      border: 2px solid #000;
+      background: #fff;
+      text-align: center;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      aspect-ratio: 1 / 1; /* Keep cells square */
+      overflow: hidden;
+    }
+
+    .bingo-cell.clicked {
+      background-color: #9acd32;
+      color: #fff;
+    }
+
+    .free-slot {
+      background-color: #f0e68c;
+      font-style: italic;
+    }
+
+    .bingo-cell span {
+      font-size: calc(1rem + 0.3vw); /* Scale font size */
+      text-align: center;
+      word-wrap: break-word;
+    }
+  </style>
+</head>
+<body class="bg-light">
+  <div class="container mt-5">
+    <div class="row">
+      <!-- Inputs -->
+      <div class="col-md-4">
+        <h2>Bingo Card Settings</h2>
+        <div class="mb-3">
+          <label for="title-input" class="form-label">Bingo Card Title</label>
+          <input type="text" id="title-input" class="form-control" placeholder="Enter a title">
+        </div>
+        <div class="mb-3">
+          <label for="free-slot-input" class="form-label">Free Slot Text</label>
+          <input type="text" id="free-slot-input" class="form-control" placeholder="Enter text for the Free Slot" value="Free Slot">
+        </div>
+        <div class="mb-3">
+          <label for="phrases-input" class="form-label">Phrases (one per line)</label>
+          <textarea id="phrases-input" class="form-control" rows="10" placeholder="Enter one phrase per line"></textarea>
+        </div>
+        <button class="btn btn-primary w-100" onclick="generateBingoCard()">Generate Bingo Card</button>
+      </div>
+
+      <!-- Bingo Card -->
+      <div class="col-md-8">
+        <h2 id="card-title" class="text-center">Bingo Card</h2>
+        <div id="bingo-card" class="bingo-card"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function generateBingoCard() {
+      // Get the title, phrases, and free slot text
+      const title = document.getElementById('title-input').value || 'Bingo Card';
+      const freeSlotText = document.getElementById('free-slot-input').value || 'Free Slot';
+      const phrasesInput = document.getElementById('phrases-input').value;
+      const phrases = phrasesInput.split('\n').map(phrase => phrase.trim()).filter(phrase => phrase.length > 0);
+
+      if (phrases.length < 24) {
+        alert('Please enter at least 24 phrases.');
+        return;
+      }
+
+      // Update title
+      document.getElementById('card-title').innerText = title;
+
+      // Shuffle phrases and select 24 random ones
+      const shuffledPhrases = shuffle(phrases).slice(0, 24);
+
+      // Insert Free Slot in the center (slot 12)
+      const cardPhrases = [...shuffledPhrases];
+      cardPhrases.splice(12, 0, freeSlotText);
+
+      // Generate grid dynamically
+      const card = document.getElementById('bingo-card');
+      card.innerHTML = ''; // Clear previous card
+
+      cardPhrases.forEach((phrase, index) => {
+        const cell = document.createElement('div');
+        cell.className = 'bingo-cell';
+        if (phrase === freeSlotText) cell.classList.add('free-slot');
+        const text = document.createElement('span');
+        text.innerText = phrase;
+        cell.appendChild(text);
+        cell.addEventListener('click', () => {
+          cell.classList.toggle('clicked');
+        });
+        card.appendChild(cell);
+      });
+    }
+  </script>
+</body>
+</html>
